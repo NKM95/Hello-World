@@ -1,31 +1,47 @@
-name: CI/CD Workflow
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Build and deploy
+      run: |
+        npm run build
+        # Add deployment steps here
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
+    - name: Deploy to production
+      if: github.ref == 'refs/heads/main'
+      run: |
+        # Deployment script for production
+        echo "Deploying to production..."
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
-
-      - name: Deploy to production
-        if: github.ref == 'refs/heads/main'
-        run: |
-         github_token:${{secrets.GITHUB_TOKEN}}
-         publish_dirr:./public
+    - name: Notify success
+      if: success()
+      run: |
+        # Notification script or alert mechanism
+        echo "Build successful! Notify relevant teams or channels."
